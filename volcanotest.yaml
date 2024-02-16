@@ -1,0 +1,78 @@
+---
+apiVersion: batch.volcano.sh/v1alpha1
+kind: Job
+metadata:
+  name: test-job
+spec:
+  minAvailable: 1
+  schedulerName: volcano
+  priorityClassName: high-priority
+  policies:
+    - event: PodEvicted
+      action: RestartJob
+  plugins:
+    ssh: []
+    env: []
+    svc: []
+  maxRetry: 5
+  queue: queueu-1
+  tasks:
+    - replicas: 2
+      name: "default-nginx"
+      template:
+        metadata:
+          name: web
+        spec:
+          containers:
+            - image: busybox
+              imagePullPolicy: IfNotPresent
+              name: nginx
+              command:
+              - sh
+              - -c
+              - echo "hello"; sleep 200
+              resources:
+                requests:
+                  cpu: "0.5"
+                  memory: "500Mi"
+          restartPolicy: OnFailure
+...
+---
+apiVersion: batch.volcano.sh/v1alpha1
+kind: Job
+metadata:
+  name: test-job-2
+spec:
+  minAvailable: 1
+  schedulerName: volcano
+  priorityClassName: low-pri
+  policies:
+    - event: PodEvicted
+      action: RestartJob
+  plugins:
+    ssh: []
+    env: []
+    svc: []
+  maxRetry: 5
+  queue: queueu-1
+  tasks:
+    - replicas: 3
+      name: "default-nginx"
+      template:
+        metadata:
+          name: web
+        spec:
+          containers:
+            - image: busybox
+              imagePullPolicy: IfNotPresent
+              name: nginx
+              command:
+              - sh
+              - -c
+              - echo "hello"; sleep 100
+              resources:
+                requests:
+                  cpu: "0.5"
+                  memory: "500Mi"
+          restartPolicy: OnFailure
+...
